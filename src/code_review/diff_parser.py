@@ -43,9 +43,10 @@ def parse_patch(patch):
             current_new_line = int(hunk_match.group(1))
             position += 1
             current_chunk = {
-                "lines": [line],
+                "lines": [],
                 "added_lines": [],
                 "changed_lines": {},  # line_number -> diff position
+                "annotated_lines": [],  # lines with line numbers for Gemini
             }
             continue
 
@@ -58,14 +59,15 @@ def parse_patch(patch):
         if line.startswith("+") and not line.startswith("+++"):
             current_chunk["added_lines"].append(current_new_line)
             current_chunk["changed_lines"][current_new_line] = position
+            current_chunk["annotated_lines"].append(f"L{current_new_line}: {line}")
             current_new_line += 1
         elif line.startswith("-") and not line.startswith("---"):
-            # Deleted lines: track position but don't increment new line counter
-            # Use negative position so we can still comment on deletions
-            pass
+            # Deleted lines: track position for commenting
+            current_chunk["annotated_lines"].append(f"     : {line}")
         else:
             # Context line
             current_chunk["changed_lines"][current_new_line] = position
+            current_chunk["annotated_lines"].append(f"L{current_new_line}: {line}")
             current_new_line += 1
 
     if current_chunk:

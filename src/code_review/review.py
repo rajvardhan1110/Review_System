@@ -74,8 +74,14 @@ def run_pr_review(github, gemini, pr_number):
         path = comment.get("path", "")
         line = comment.get("line", 0)
         body = comment.get("body", "")
-        if path in valid_lines and line in valid_lines[path] and body:
+        if not body:
+            continue
+        snapped_line, _ = snap_to_valid_line(path, line, valid_lines)
+        if snapped_line is not None:
+            comment["line"] = snapped_line
             valid_comments.append(comment)
+        else:
+            print(f"Skipping comment for {path}:{line} — not in diff range.")
 
     if valid_comments:
         print(f"Posting {len(valid_comments)} inline comment(s)...")
@@ -127,9 +133,15 @@ def run_push_review(github, gemini, base_ref, head_ref, commit_sha):
         path = comment.get("path", "")
         line = comment.get("line", 0)
         body = comment.get("body", "")
-        if path in valid_lines and line in valid_lines[path] and body:
-            comment["position"] = valid_lines[path][line]
+        if not body:
+            continue
+        snapped_line, position = snap_to_valid_line(path, line, valid_lines)
+        if snapped_line is not None and position is not None:
+            comment["line"] = snapped_line
+            comment["position"] = position
             valid_comments.append(comment)
+        else:
+            print(f"Skipping comment for {path}:{line} — not in diff range.")
 
     if valid_comments:
         print(f"Posting {len(valid_comments)} inline comment(s) on commit...")
@@ -149,7 +161,7 @@ def build_diff_text(diff_entries):
         parts.append(f"## File: {entry['path']}")
         parts.append("```diff")
         for chunk in entry["chunks"]:
-            for line in chunk["lines"]:
+            for line in chunk["annotated_lines"]:
                 parts.append(line)
         parts.append("```")
         parts.append("")
@@ -166,6 +178,21 @@ def build_valid_lines_map(diff_entries):
         if lines_map:
             valid[entry["path"]] = lines_map
     return valid
+
+
+def snap_to_valid_line(path, line, valid_lines):
+    """Find the nearest valid line within a range of +/- 3 lines."""
+    if path not in valid_lines:
+        return None, None
+    lines_map = valid_lines[path]
+    if line in lines_map:
+        return line, lines_map[line]
+    # Search nearby lines (prefer closest)
+    for offset in [1, -1, 2, -2, 3, -3]:
+        candidate = line + offset
+        if candidate in lines_map:
+            return candidate, lines_map[candidate]
+    return None, None
 
 
 def format_summary(summary, files_reviewed, inline_count):
