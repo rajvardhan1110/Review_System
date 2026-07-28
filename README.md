@@ -102,10 +102,9 @@ When you open a Pull Request or push new commits to an existing PR, the AI Code 
 MIT
 
 
-### Setup
+### Configuration
 
-1. Get a free Google Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
-2. Add the key as a repository secret:
-   - Go to your repo → Settings → Secrets and variables → Actions
-   - Create a new secret named `GEMINI_API_KEY` with your API key
-3. That's it! The workflow uses the built-in `GITHUB_TOKEN` for posting comments.
+- **Model:** `gemini-3.1-flash-lite-preview` (free tier)
+- **Temperature:** 0 (deterministic output)
+- **Max comments:** 10 per review (to reduce noise)
+- **Prompt:** Customizable in `review_prompt.md`
