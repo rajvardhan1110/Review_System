@@ -100,3 +100,6 @@ When you open a Pull Request or push new commits to an existing PR, the AI Code 
 ## License
 
 MIT
+
+
+### What Gets Reviewed- Only changed/added lines (not full files)- Skips binary files, lock files, and assets- Focuses on: bugs, security issues, performance, and code quality
