@@ -32,6 +32,7 @@ def parse_patch(patch):
     chunks = []
     current_chunk = None
     current_new_line = 0
+    position = 0  # 1-based position in the diff (needed for commit comments API)
 
     for line in patch.split("\n"):
         # Match hunk header: @@ -old_start,old_count +new_start,new_count @@
@@ -40,25 +41,31 @@ def parse_patch(patch):
             if current_chunk:
                 chunks.append(current_chunk)
             current_new_line = int(hunk_match.group(1))
+            position += 1
             current_chunk = {
                 "lines": [line],
                 "added_lines": [],
+                "changed_lines": {},  # line_number -> diff position
             }
             continue
 
         if current_chunk is None:
             continue
 
+        position += 1
         current_chunk["lines"].append(line)
 
         if line.startswith("+") and not line.startswith("+++"):
             current_chunk["added_lines"].append(current_new_line)
+            current_chunk["changed_lines"][current_new_line] = position
             current_new_line += 1
         elif line.startswith("-") and not line.startswith("---"):
-            # Deleted lines don't increment new line counter
+            # Deleted lines: track position but don't increment new line counter
+            # Use negative position so we can still comment on deletions
             pass
         else:
             # Context line
+            current_chunk["changed_lines"][current_new_line] = position
             current_new_line += 1
 
     if current_chunk:

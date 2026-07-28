@@ -128,6 +128,7 @@ def run_push_review(github, gemini, base_ref, head_ref, commit_sha):
         line = comment.get("line", 0)
         body = comment.get("body", "")
         if path in valid_lines and line in valid_lines[path] and body:
+            comment["position"] = valid_lines[path][line]
             valid_comments.append(comment)
 
     if valid_comments:
@@ -158,29 +159,29 @@ def build_diff_text(diff_entries):
 def build_valid_lines_map(diff_entries):
     valid = {}
     for entry in diff_entries:
-        lines_set = set()
+        lines_map = {}  # line_number -> diff position
         for chunk in entry["chunks"]:
-            for line_num in chunk["added_lines"]:
-                lines_set.add(line_num)
-        if lines_set:
-            valid[entry["path"]] = lines_set
+            for line_num, pos in chunk["changed_lines"].items():
+                lines_map[line_num] = pos
+        if lines_map:
+            valid[entry["path"]] = lines_map
     return valid
 
 
-def format_summary(summary, files_reviewed, issues_found):
+def format_summary(summary, files_reviewed, inline_count):
     lines = [
         "## 🤖 AI Code Review Summary",
         "",
         f"**Files reviewed:** {len(files_reviewed)}",
-        f"**Issues found:** {issues_found}",
+        f"**Inline comments posted:** {inline_count}",
         "",
-        "### Files:",
+        "### Files Changed:",
         "",
     ]
     for f in files_reviewed:
         lines.append(f"- `{f}`")
     lines.append("")
-    lines.append("### Summary:")
+    lines.append("### What Changed:")
     lines.append("")
     lines.append(summary)
     lines.append("")

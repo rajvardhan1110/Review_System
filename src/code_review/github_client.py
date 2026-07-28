@@ -146,13 +146,13 @@ class GitHubClient:
             body = {
                 "body": comment["body"],
                 "path": comment["path"],
-                "line": comment["line"],
+                "position": comment.get("position", comment.get("line", 1)),
             }
             response = requests.post(url, headers=self.headers, json=body)
             if response.status_code in (200, 201):
                 posted += 1
             else:
-                print(f"Failed to post commit comment on {comment['path']}:{comment['line']}: {response.status_code}")
+                print(f"Failed to post commit comment on {comment['path']}:{comment.get('line')}: {response.status_code} {response.text}")
         print(f"Posted {posted}/{len(comments)} inline comments on commit.")
 
     def _get_commit_comments(self, commit_sha):
