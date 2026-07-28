@@ -102,4 +102,10 @@ When you open a Pull Request or push new commits to an existing PR, the AI Code 
 MIT
 
 
-### What Gets Reviewed- Only changed/added lines (not full files)- Skips binary files, lock files, and assets- Focuses on: bugs, security issues, performance, and code quality
+### Setup
+
+1. Get a free Google Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
+2. Add the key as a repository secret:
+   - Go to your repo → Settings → Secrets and variables → Actions
+   - Create a new secret named `GEMINI_API_KEY` with your API key
+3. That's it! The workflow uses the built-in `GITHUB_TOKEN` for posting comments.
