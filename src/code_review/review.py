@@ -76,9 +76,10 @@ def run_pr_review(github, gemini, pr_number):
         body = comment.get("body", "")
         if not body:
             continue
-        snapped_line, _ = snap_to_valid_line(path, line, valid_lines)
-        if snapped_line is not None:
+        snapped_line, position = snap_to_valid_line(path, line, valid_lines)
+        if snapped_line is not None and position is not None:
             comment["line"] = snapped_line
+            comment["position"] = position
             valid_comments.append(comment)
         else:
             print(f"Skipping comment for {path}:{line} — not in diff range.")
@@ -169,12 +170,14 @@ def build_diff_text(diff_entries):
 
 
 def build_valid_lines_map(diff_entries):
+    """Only added lines (+) are valid targets for inline comments."""
     valid = {}
     for entry in diff_entries:
         lines_map = {}  # line_number -> diff position
         for chunk in entry["chunks"]:
-            for line_num, pos in chunk["changed_lines"].items():
-                lines_map[line_num] = pos
+            for line_num in chunk["added_lines"]:
+                if line_num in chunk["changed_lines"]:
+                    lines_map[line_num] = chunk["changed_lines"][line_num]
         if lines_map:
             valid[entry["path"]] = lines_map
     return valid

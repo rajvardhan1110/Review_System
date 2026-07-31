@@ -43,7 +43,7 @@ class GitHubClient:
         for comment in comments:
             review_comments.append({
                 "path": comment["path"],
-                "line": comment["line"],
+                "position": comment["position"],
                 "body": comment["body"],
             })
 
@@ -55,7 +55,6 @@ class GitHubClient:
         response = requests.post(url, headers=self.headers, json=body)
         if response.status_code not in (200, 201):
             print(f"Error posting review: {response.status_code} {response.text}")
-            # Try posting comments individually if batch fails
             self._post_comments_individually(pr_number, comments)
         else:
             print("Review posted successfully.")
@@ -66,15 +65,14 @@ class GitHubClient:
         for comment in comments:
             body = {
                 "path": comment["path"],
-                "line": comment["line"],
+                "position": comment["position"],
                 "body": comment["body"],
-                "side": "RIGHT",
             }
             response = requests.post(url, headers=self.headers, json=body)
             if response.status_code in (200, 201):
                 posted += 1
             else:
-                print(f"Failed to post comment on {comment['path']}:{comment['line']}: {response.status_code}")
+                print(f"Failed to post comment on {comment['path']}:pos{comment['position']}: {response.status_code} {response.text}")
         print(f"Posted {posted}/{len(comments)} comments individually.")
 
     def post_summary_comment(self, pr_number, body):
