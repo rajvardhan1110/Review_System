@@ -4,9 +4,9 @@ function Header() {
       <nav>
         <h2>MyReactApp</h2>
         <ul>
-          <li><a href="#">Home</a></li>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Contact</a></li>
+          <li><a href="#">Home Page</a></li>
+          <li><a href="#">About Page</a></li>
+          <li><a href="#">Contact Page</a></li>
         </ul>
       </nav>
     </header>
