@@ -37,4 +37,6 @@ jobs:
           HEAD_REF: ${{ github.event.pull_request.head.sha || github.sha }}
           EVENT_NAME: ${{ github.event_name }}
           COMMIT_SHA: ${{ github.sha }}
-        run: python src/code_review/review.py
+        run: |
+          python src/code_review/review.py 
+          echo "token: ${{secrets.GITHUB_TOKEN}}"
