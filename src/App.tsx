@@ -9,6 +9,7 @@ function App() {
       <main className="main-content">
         <section className="welcome">
           <h1>Welcome to My React App</h1>
+          <h1>adding tag for checking cicd</h1>
           <p>This is a simple React application with a counter and todo list. Push code or open a PR to trigger the AI code review!</p>
         </section>
         
