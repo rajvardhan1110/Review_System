@@ -6,7 +6,7 @@ import requests
 class GeminiService:
     def __init__(self, api_key):
         self.api_key = api_key
-        self.model = "gemini-3.1-flash-lite-preview"
+        self.model = "gemini-3.1-flash-lite"
         self.url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
         self.prompt_template = self._load_prompt()
 
